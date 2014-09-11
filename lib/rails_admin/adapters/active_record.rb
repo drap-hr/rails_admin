@@ -4,7 +4,7 @@ require 'rails_admin/adapters/active_record/abstract_object'
 module RailsAdmin
   module Adapters
     module ActiveRecord
-      DISABLED_COLUMN_TYPES = [:tsvector, :blob, :binary, :spatial, :hstore, :geometry]
+      DISABLED_COLUMN_TYPES = [:tsvector, :blob, :binary, :spatial, :geometry]
       DISABLED_COLUMN_MATCHERS = [/_array$/]
 
       def new(params = {})
@@ -286,6 +286,7 @@ module RailsAdmin
           when :integer, :decimal, :float then build_statement_for_integer_decimal_or_float
           when :string, :text             then build_statement_for_string_or_text
           when :enum                      then build_statement_for_enum
+          when :hstore                    then build_statement_for_hstore
           when :belongs_to_association    then build_statement_for_belongs_to_association
           end
         end
@@ -324,6 +325,11 @@ module RailsAdmin
         def build_statement_for_enum
           return if @value.blank?
           ["(#{@column} IN (?))", Array.wrap(@value)]
+        end
+
+        def build_statement_for_hstore
+          return if @value.blank?
+          ["array_to_string(avals(#{@column}), ' ') #{like_operator} ?", "%#{@value.downcase}%"]
         end
 
         def ar_adapter
