@@ -32,6 +32,10 @@ module RailsAdmin
           register_instance_option :multiple? do
             properties && [:serialized].include?(properties.type)
           end
+
+          register_instance_option :queryable do
+            false
+          end
         end
       end
     end
